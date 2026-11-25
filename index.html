@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>聚福楼 · 中餐馆销售仪表盘</title>
+  <style>
+    :root {
+      --bg-page: #FAF7F2;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #F4EFE6;
+      --bg-hover: #FBF8F3;
+      --border: #E8E0D4;
+      --border-strong: #D6CBB9;
+
+      --text-primary: #1F1A17;
+      --text-secondary: #685F57;
+      --text-muted: #978D83;
+
+      --vermilion: #C83E37;
+      --vermilion-soft: #FBECEB;
+      --gold: #C8922D;
+      --gold-soft: #FBF4E4;
+      --jade: #2E7D6B;
+      --jade-soft: #E9F4F1;
+      --ink-teal: #3B5B6D;
+      --ink-teal-soft: #ECF2F5;
+      --plum: #7D4E5D;
+
+      --shadow-sm: 0 1px 2px rgba(31, 26, 23, 0.04), 0 4px 12px rgba(31, 26, 23, 0.03);
+      --shadow-md: 0 12px 32px rgba(31, 26, 23, 0.1);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+
+      --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-image:
+        radial-gradient(circle at 10% 0%, rgba(200, 62, 55, 0.055) 0%, transparent 38%),
+        radial-gradient(circle at 90% 8%, rgba(200, 146, 45, 0.06) 0%, transparent 32%);
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* 顶部栏 */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-group { display: flex; align-items: center; gap: 14px; }
+
+    .brand-seal {
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 3px 8px rgba(200, 62, 55, 0.2));
+    }
+
+    .brand-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .brand-title-row h1 { font-size: 1.24rem; font-weight: 700; letter-spacing: 0.02em; }
+    .brand-subtitle { font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--jade);
+      background: var(--jade-soft);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--jade);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(1.28); }
+    }
+
+    .controls-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+    .segmented-control {
+      display: inline-flex;
+      background: var(--bg-subtle);
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 500;
+      padding: 6px 13px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .seg-btn:hover { color: var(--text-primary); }
+
+    .seg-btn.active {
+      background: var(--bg-card);
+      color: var(--vermilion);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .select-wrap { position: relative; display: inline-flex; align-items: center; }
+
+    .select-icon {
+      position: absolute;
+      left: 11px;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .select-wrap select {
+      appearance: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 30px 7px 32px;
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+        linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+      background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .select-wrap select:focus, .compact-select:focus, .search-input:focus {
+      outline: none;
+      border-color: var(--vermilion);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 10px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-ghost { background: var(--bg-card); border-color: var(--border); color: var(--text-primary); }
+    .btn-ghost:hover { background: var(--bg-subtle); }
+    .btn-primary { background: var(--vermilion); color: #FFFFFF; }
+    .btn-primary:hover { background: #B2332C; box-shadow: 0 4px 12px rgba(200, 62, 55, 0.25); }
+
+    /* KPI 卡片 */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+    .kpi-highlight {
+      background: linear-gradient(145deg, #FFFFFF 65%, #FDF4F2 100%);
+      border-color: #EAD2CE;
+    }
+
+    .kpi-top { display: flex; align-items: center; justify-content: space-between; }
+    .kpi-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+
+    .kpi-badge {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-badge.up { color: var(--jade); background: var(--jade-soft); }
+    .kpi-badge.neutral { color: var(--gold); background: var(--gold-soft); }
+
+    .kpi-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.15;
+    }
+
+    .kpi-value small { font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); }
+
+    .kpi-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-meta strong { color: var(--text-primary); }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      background: var(--bg-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: auto;
+    }
+
+    .progress-fill { height: 100%; border-radius: 999px; transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+    .progress-fill.vermilion { background: linear-gradient(90deg, #D9534F, var(--vermilion)); }
+    .progress-fill.jade { background: linear-gradient(90deg, #439B87, var(--jade)); }
+
+    .sparkline-row { display: flex; align-items: flex-end; gap: 4px; height: 26px; margin-top: auto; }
+    .spark-bar { flex: 1; background: rgba(200, 146, 45, 0.3); border-radius: 3px 3px 1px 1px; transition: height 0.3s ease; }
+    .spark-bar:last-child { background: var(--gold); }
+
+    .mini-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+    .mini-pills span {
+      font-size: 0.74rem;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 通用卡片 */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .wrap-header { flex-wrap: wrap; }
+    .panel-header h2 { font-size: 1.04rem; font-weight: 700; color: var(--text-primary); }
+    .panel-desc { font-size: 0.79rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* 主图表区 */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .mini-toggle { display: inline-flex; background: var(--bg-subtle); padding: 3px; border-radius: 8px; }
+
+    .mini-btn {
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .mini-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .chart-legend { display: flex; align-items: center; gap: 18px; font-size: 0.8rem; color: var(--text-secondary); }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+    .swatch.vermilion { background: var(--vermilion); }
+    .swatch.gold { background: var(--gold); }
+    .swatch.jade { background: var(--jade); }
+
+    .trend-chart-wrap { position: relative; width: 100%; min-height: 260px; }
+    #trendChartSvg { width: 100%; height: 268px; display: block; overflow: visible; }
+
+    .chart-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(31, 26, 23, 0.94);
+      color: #FAF7F2;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      min-width: 148px;
+      font-variant-numeric: tabular-nums;
+      transform: translate(-50%, -108%);
+    }
+
+    /* 环形图 */
+    .donut-layout { display: flex; flex-direction: column; align-items: center; gap: 16px; margin: auto 0; }
+    .donut-wrap { position: relative; width: 196px; height: 196px; }
+    #categoryDonutSvg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-segment { transition: stroke-width 0.2s ease, opacity 0.2s ease; cursor: pointer; }
+
+    .donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .donut-center-label { font-size: 0.75rem; color: var(--text-muted); }
+    .donut-center-value { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin: 2px 0; }
+    .donut-center-sub { font-size: 0.76rem; font-weight: 600; color: var(--vermilion); }
+
+    .category-list { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 7px; }
+
+    .category-row {
+      display: grid;
+      grid-template-columns: 12px 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .category-row:hover, .category-row.active { background: var(--bg-subtle); }
+    .cat-dot { width: 10px; height: 10px; border-radius: 3px; }
+    .cat-name { font-weight: 600; color: var(--text-primary); }
+    .cat-share { color: var(--text-secondary); font-size: 0.78rem; }
+    .cat-rev { font-weight: 700; color: var(--text-primary); }
+
+    /* 三栏运营监测 */
+    .ops-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+
+    .pill-tag { font-size: 0.74rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .pill-tag.gold { color: #9A6B16; background: var(--gold-soft); }
+    .pill-tag.jade { color: var(--jade); background: var(--jade-soft); }
+
+    .hourly-chart {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: end;
+      gap: 6px;
+      height: 152px;
+      padding-top: 12px;
+    }
+
+    .hour-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px; }
+    .hour-bar-wrap { width: 100%; flex: 1; display: flex; align-items: flex-end; }
+    .hour-bar { width: 100%; border-radius: 5px 5px 2px 2px; background: #DFD4C3; transition: height 0.35s ease; cursor: pointer; }
+    .hour-bar.peak { background: linear-gradient(180deg, #D9534F 0%, var(--vermilion) 100%); }
+    .hour-bar.warm { background: linear-gradient(180deg, #DFAB47 0%, var(--gold) 100%); }
+    .hour-bar:hover { filter: brightness(0.92); }
+    .hour-label { font-size: 0.68rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+    .hourly-footer {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.81rem;
+      color: var(--text-secondary);
+    }
+
+    .hourly-footer strong { color: var(--text-primary); }
+
+    /* 桌台与渠道概览 */
+    .channel-bars { display: flex; flex-direction: column; gap: 11px; }
+    .channel-item { display: flex; flex-direction: column; gap: 5px; }
+
+    .channel-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.83rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .channel-name { font-weight: 600; }
+    .channel-val { color: var(--text-secondary); font-size: 0.78rem; }
+    .channel-val strong { color: var(--text-primary); margin-right: 6px; }
+    .channel-track { height: 7px; background: var(--bg-subtle); border-radius: 999px; overflow: hidden; }
+    .channel-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+
+    .room-pills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; }
+
+    .room-chip {
+      padding: 6px 4px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.73rem;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+    }
+
+    .room-chip.busy { background: var(--vermilion-soft); border-color: #ECC5C2; color: var(--vermilion); font-weight: 600; }
+    .room-chip.reserved { background: var(--gold-soft); border-color: #ECD9B4; color: #9A6B16; font-weight: 600; }
+    .room-chip.free { background: var(--jade-soft); border-color: #C4E2D9; color: var(--jade); font-weight: 600; }
+
+    /* 后厨出品 */
+    .kitchen-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .kitchen-box { background: var(--bg-subtle); border-radius: var(--radius-md); padding: 10px 12px; }
+    .kitchen-box span { display: block; font-size: 0.75rem; color: var(--text-secondary); }
+    .kitchen-box strong { display: block; font-size: 1.08rem; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+    .stock-alerts { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+
+    .alert-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.81rem;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: #FFF9F2;
+      border: 1px solid #F0DFC2;
+    }
+
+    .alert-row.critical { background: #FDF3F2; border-color: #F2CCC9; }
+
+    .alert-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(200, 146, 45, 0.16);
+      color: #8F6111;
+    }
+
+    .alert-row.critical .alert-badge { background: rgba(200, 62, 55, 0.14); color: var(--vermilion); }
+
+    /* 底部两栏明细 */
+    .details-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .filter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover { border-color: var(--border-strong); color: var(--text-primary); }
+    .chip.active { background: var(--text-primary); border-color: var(--text-primary); color: #FFFFFF; }
+
+    .compact-select, .search-input {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      color: var(--text-primary);
+    }
+
+    .search-input { width: 170px; }
+    .table-scroll { overflow-x: auto; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+
+    .data-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table td { padding: 11px 10px; border-bottom: 1px solid #F1ECE4; vertical-align: middle; }
+    .data-table tbody tr { cursor: pointer; transition: background 0.14s ease; }
+    .data-table tbody tr:hover { background: var(--bg-hover); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    .num { text-align: right !important; font-variant-numeric: tabular-nums; }
+
+    .rank-pill {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+    }
+
+    .rank-1 { background: #FBF0D4; color: #9E6B12; }
+    .rank-2 { background: #ECEFF2; color: #4E5B66; }
+    .rank-3 { background: #F7E5DA; color: #9C4B28; }
+
+    .dish-cell { display: flex; flex-direction: column; gap: 2px; }
+    .dish-name { font-weight: 600; color: var(--text-primary); }
+    .dish-sub { display: flex; align-items: center; gap: 6px; font-size: 0.73rem; color: var(--text-muted); }
+
+    .dish-tag {
+      background: var(--vermilion-soft);
+      color: var(--vermilion);
+      padding: 0 5px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .status-paid { background: var(--jade-soft); color: var(--jade); }
+    .status-cooking { background: var(--gold-soft); color: #9A6B16; }
+    .status-delivery { background: var(--ink-teal-soft); color: var(--ink-teal); }
+
+    .order-id { font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .order-table-sub { font-size: 0.74rem; color: var(--text-muted); }
+    .empty-state { text-align: center; color: var(--text-muted); padding: 28px 12px !important; }
+
+    /* 侧边详情抽屉 */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 26, 23, 0.32);
+      backdrop-filter: blur(2px);
+      z-index: 40;
+    }
+
+    .detail-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(440px, 94vw);
+      height: 100vh;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      box-shadow: -12px 0 36px rgba(31, 26, 23, 0.14);
+      z-index: 50;
+      transform: translateX(102%);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-drawer.open { transform: translateX(0); }
+
+    .drawer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .drawer-eyebrow { font-size: 0.75rem; font-weight: 600; color: var(--vermilion); }
+    .drawer-header h3 { font-size: 1.15rem; margin-top: 2px; }
+
+    .icon-close {
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .drawer-body { padding: 20px 22px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .drawer-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .drawer-stat { background: var(--bg-subtle); padding: 12px; border-radius: 10px; }
+    .drawer-stat span { display: block; font-size: 0.75rem; color: var(--text-secondary); }
+    .drawer-stat strong { display: block; font-size: 1.08rem; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .drawer-section-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+
+    .receipt-list { list-style: none; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .receipt-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      border-bottom: 1px dashed var(--border);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .receipt-list li:last-child { border-bottom: none; }
+    .receipt-total { background: var(--bg-subtle); font-weight: 700; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1F1A17;
+      color: #FAF7F2;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+      z-index: 60;
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .analytics-grid, .ops-grid, .details-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      .app-shell { padding: 14px 14px 28px; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 14px; }
+      .search-input { width: 100%; }
+      .room-pills { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="brand-group">
+        <div class="brand-seal" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="40" height="40" fill="none">
+            <rect x="2" y="2" width="36" height="36" rx="8" fill="#C83E37" />
+            <rect x="5.5" y="5.5" width="29" height="29" rx="5" stroke="#F7E7CE" stroke-opacity="0.65" stroke-width="1.2" />
+            <path d="M20 10L28 16H12L20 10Z" fill="#FAF7F2" />
+            <path d="M13 18H27V21.5H13V18ZM15 23.5H25V29.5H22V26H18V29.5H15V23.5Z" fill="#FAF7F2" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title-row">
+            <h1>聚福楼 · 餐厅销售仪表盘</h1>
+            <span class="live-badge"><span class="live-dot"></span>营业中 · POS 实时同步</span>
+          </div>
+          <p class="brand-subtitle" id="headerContextText">新派淮扬融合菜 · 24桌散台 / 8间雅座包厢 / 线上外卖</p>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="segmented-control" role="tablist" aria-label="统计周期">
+          <button class="seg-btn active" data-range="today" role="tab" aria-selected="true">今日</button>
+          <button class="seg-btn" data-range="week" role="tab" aria-selected="false">近7日</button>
+          <button class="seg-btn" data-range="month" role="tab" aria-selected="false">本月</button>
+          <button class="seg-btn" data-range="quarter" role="tab" aria-selected="false">本季度</button>
+        </div>
+
+        <label class="select-wrap" aria-label="用餐区域筛选">
+          <svg class="select-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3 8.5L10 3l7 5.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5Z" />
+            <path d="M8 18v-5h4v5" />
+          </svg>
+          <select id="areaSelect">
+            <option value="all">全店区域汇总</option>
+            <option value="hall">一楼堂食散台 (24桌)</option>
+            <option value="vip">二楼雅间包厢 (8间)</option>
+            <option value="online">外卖及小程序自提</option>
+          </select>
+        </label>
+
+        <button class="btn btn-ghost" id="refreshBtn" title="同步最新营业数据">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M16.5 10a6.5 6.5 0 1 1-1.9-4.6" stroke-linecap="round" />
+            <path d="M16.5 3.5v3.2h-3.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>同步</span>
+        </button>
+
+        <button class="btn btn-primary" id="exportCsvBtn">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M10 3v9.5m0 0 3.5-3.5M10 12.5 6.5 9" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M4 14.5v1.5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1.5" stroke-linecap="round" />
+          </svg>
+          <span>导出报表</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 核心 KPI 指标 -->
+    <section class="kpi-grid" aria-label="核心经营指标">
+      <article class="kpi-card kpi-highlight">
+        <div class="kpi-top">
+          <span class="kpi-label">总营业额</span>
+          <span class="kpi-badge up" id="kpiRevDelta">↑ 13.8%</span>
+        </div>
+        <div class="kpi-value" id="kpiRevenue">¥ 31,860</div>
+        <div class="kpi-meta">
+          <span id="kpiTargetLabel">目标达成率 91.0%</span>
+          <span id="kpiTargetValue">目标 ¥35,000</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill vermilion" id="kpiTargetBar" style="width: 91%"></div>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">有效订单数</span>
+          <span class="kpi-badge up" id="kpiOrderDelta">↑ 9.2%</span>
+        </div>
+        <div class="kpi-value" id="kpiOrders">164 <small>单</small></div>
+        <div class="kpi-meta" id="kpiOrderSplit">散台 96 · 包厢 16 · 外卖/自提 52</div>
+        <div class="sparkline-row" id="ordersSparkline" aria-hidden="true"></div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">客单价 & 翻台率</span>
+          <span class="kpi-badge up" id="kpiTicketDelta">↑ 4.6%</span>
+        </div>
+        <div class="kpi-value" id="kpiTicket">¥ 194.3</div>
+        <div class="kpi-meta">
+          <span>桌均人数 <strong id="kpiPartySize">3.4人</strong></span>
+          <span>翻台率 <strong id="kpiTurnover">3.5次</strong></span>
+        </div>
+        <div class="mini-pills" id="diningPeriodMix">
+          <span>午市 39%</span>
+          <span>晚市 53%</span>
+          <span>宵夜 8%</span>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">综合毛利率</span>
+          <span class="kpi-badge neutral" id="kpiMarginDelta">↑ 1.2pt</span>
+        </div>
+        <div class="kpi-value" id="kpiMargin">65.2%</div>
+        <div class="kpi-meta">
+          <span>大众点评 <strong id="kpiRating">4.9 ★</strong></span>
+          <span id="kpiReviewCount">好评率 98.6%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill jade" id="kpiMarginBar" style="width: 65.2%"></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- 主图表：营收趋势 + 品类占比 -->
+    <section class="analytics-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>营收趋势与客流走势</h2>
+            <p class="panel-desc" id="trendSubtitle">按营业时段统计实时营收与订单变化</p>
+          </div>
+          <div class="mini-toggle" role="group" aria-label="趋势视图切换">
+            <button class="mini-btn active" data-trend-mode="revenue">营收 + 单量</button>
+            <button class="mini-btn" data-trend-mode="channel">堂食 vs 外卖</button>
+          </div>
+        </div>
+
+        <div class="chart-legend" id="trendLegend">
+          <span class="legend-item"><i class="swatch vermilion"></i>总营收 (元)</span>
+          <span class="legend-item"><i class="swatch gold"></i>有效订单 (单)</span>
+        </div>
+
+        <div class="trend-chart-wrap">
+          <svg id="trendChartSvg" viewBox="0 0 760 268" preserveAspectRatio="none" aria-label="营收趋势图"></svg>
+          <div class="chart-tooltip" id="trendTooltip" hidden></div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>菜系品类营收占比</h2>
+            <p class="panel-desc">悬停查看各品类营收金额与毛利率</p>
+          </div>
+        </div>
+
+        <div class="donut-layout">
+          <div class="donut-wrap">
+            <svg id="categoryDonutSvg" viewBox="0 0 220 220" aria-label="菜系品类环形图"></svg>
+            <div class="donut-center">
+              <span class="donut-center-label" id="donutCenterLabel">全品类营收</span>
+              <strong class="donut-center-value" id="donutCenterValue">¥ 31,860</strong>
+              <span class="donut-center-sub" id="donutCenterSub">100.0%</span>
+            </div>
+          </div>
+
+          <ul class="category-list" id="categoryList"></ul>
+        </div>
+      </article>
+    </section>
+
+    <!-- 单店运营三栏：时段上座 + 桌台包厢状态 + 后厨出餐与库存 -->
+    <section class="ops-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>营业时段上座率高峰</h2>
+            <p class="panel-desc">午市 (11:30-13:30) 与晚市 (18:00-20:30)</p>
+          </div>
+          <span class="pill-tag gold" id="peakHourTag">峰值 19:00</span>
+        </div>
+        <div class="hourly-chart" id="hourlyChart"></div>
+        <div class="hourly-footer">
+          <span>当前上座率 <strong id="currentOccupancy">88%</strong></span>
+          <span>门口等位 <strong id="waitingTables">6 桌</strong></span>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>渠道构成与包厢实时状态</h2>
+            <p class="panel-desc">散台、雅座包厢及线上平台销售分布</p>
+          </div>
+        </div>
+        <div class="channel-bars" id="channelBars"></div>
+        <div class="room-pills" aria-label="二楼包厢实时状态">
+          <div class="room-chip busy">牡丹厅 · 用餐中</div>
+          <div class="room-chip busy">兰亭阁 · 用餐中</div>
+          <div class="room-chip reserved">竹韵居 · 12:30订</div>
+          <div class="room-chip free">松风轩 · 空闲</div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>后厨出品与沽清预警</h2>
+            <p class="panel-desc">实时传菜效率与紧俏鲜活食材余量</p>
+          </div>
+          <span class="pill-tag jade">出品流畅</span>
+        </div>
+        <div class="kitchen-metrics">
+          <div class="kitchen-box">
+            <span>平均出菜时长</span>
+            <strong>10.8 分钟</strong>
+          </div>
+          <div class="kitchen-box">
+            <span>超时率 (&gt;20分)</span>
+            <strong>1.4%</strong>
+          </div>
+          <div class="kitchen-box">
+            <span>招牌套餐点单率</span>
+            <strong>34.2%</strong>
+          </div>
+          <div class="kitchen-box">
+            <span>退菜 / 折让率</span>
+            <strong>0.5%</strong>
+          </div>
+        </div>
+        <div class="stock-alerts">
+          <div class="alert-row critical">
+            <span><strong>清蒸深海东星斑</strong> · 鲜活备货紧张</span>
+            <span class="alert-badge">仅余 2 份</span>
+          </div>
+          <div class="alert-row">
+            <span><strong>金鼎片皮烤鸭</strong> · 午市炉位余量</span>
+            <span class="alert-badge">余 6 只</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- 底部明细：热销菜品榜 + 实时订单流水 -->
+    <section class="details-grid">
+      <article class="panel">
+        <div class="panel-header wrap-header">
+          <div>
+            <h2>菜品销量排行榜</h2>
+            <p class="panel-desc">点击菜品可查看食材成本与近7日销量趋势</p>
+          </div>
+          <div class="filter-row">
+            <div class="chip-group" id="dishCategoryChips">
+              <button class="chip active" data-cat="all">全部</button>
+              <button class="chip" data-cat="热炒">热炒</button>
+              <button class="chip" data-cat="烧腊">烧腊</button>
+              <button class="chip" data-cat="汤煲">汤煲</button>
+              <button class="chip" data-cat="点心">点心</button>
+              <button class="chip" data-cat="茶饮">茶饮</button>
+            </div>
+            <select id="dishSortSelect" class="compact-select" aria-label="排序方式">
+              <option value="revenue">按销售额</option>
+              <option value="qty">按销量</option>
+              <option value="margin">按毛利率</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>排名</th>
+                <th>菜品名称</th>
+                <th class="num">单价</th>
+                <th class="num">销量</th>
+                <th class="num">销售额</th>
+                <th class="num">毛利</th>
+              </tr>
+            </thead>
+            <tbody id="dishesTbody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header wrap-header">
+          <div>
+            <h2>实时订单流水</h2>
+            <p class="panel-desc">点击订单行可查看完整点菜小票明细</p>
+          </div>
+          <div class="filter-row">
+            <div class="chip-group" id="orderStatusChips">
+              <button class="chip active" data-status="all">全部</button>
+              <button class="chip" data-status="paid">已结账</button>
+              <button class="chip" data-status="cooking">备菜中</button>
+              <button class="chip" data-status="delivery">配送中</button>
+            </div>
+            <input type="search" id="orderSearchInput" class="search-input" placeholder="搜单号 / 桌号 / 菜品..." aria-label="搜索订单" />
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>单号 / 桌台</th>
+                <th>菜品摘要</th>
+                <th class="num">金额</th>
+                <th>支付/渠道</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTbody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <!-- 右侧详情抽屉 -->
+  <div class="drawer-backdrop" id="detailBackdrop" hidden></div>
+  <aside class="detail-drawer" id="detailDrawer" aria-hidden="true" aria-labelledby="drawerTitle">
+    <div class="drawer-header">
+      <div>
+        <span class="drawer-eyebrow" id="drawerEyebrow">详情视图</span>
+        <h3 id="drawerTitle">详情</h3>
+      </div>
+      <button class="icon-close" id="closeDrawerBtn" aria-label="关闭抽屉">✕</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <div class="toast" id="toastEl" role="status" aria-live="polite" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="charts.js"></script>
+</body>
+</html>
